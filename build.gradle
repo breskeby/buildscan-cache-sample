@@ -1,0 +1,26 @@
+buildscript {
+    repositories {
+       mavenLocal()
+    }
+
+    dependencies {
+        classpath 'com.gradle:build-scan-plugin:1.2-prerelease'
+    }
+}
+
+apply plugin: 'com.gradle.build-scan'
+apply plugin: 'java'
+
+buildScan {
+    licenseAgreementUrl = 'https://gradle.com/terms-of-service'
+    licenseAgree = 'yes'
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile 'org.slf4j:slf4j-api:1.7.21'
+    testCompile 'junit:junit:4.12'
+}
