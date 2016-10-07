@@ -1,15 +1,7 @@
-buildscript {
-    repositories {
-       mavenLocal()
-    }
-
-    dependencies {
-        classpath 'com.gradle:build-scan-plugin:1.2-prerelease'
-    }
-}
-
+import com.gradle.spike.TaskCacheStatisticsPlugin
 apply plugin: 'com.gradle.build-scan'
 apply plugin: 'java'
+apply plugin: TaskCacheStatisticsPlugin
 
 buildScan {
     licenseAgreementUrl = 'https://gradle.com/terms-of-service'
@@ -20,7 +12,10 @@ repositories {
     jcenter()
 }
 
+jar.manifest.attributes.put("tweak", "tweak4")
+
 dependencies {
     compile 'org.slf4j:slf4j-api:1.7.21'
+
     testCompile 'junit:junit:4.12'
 }
