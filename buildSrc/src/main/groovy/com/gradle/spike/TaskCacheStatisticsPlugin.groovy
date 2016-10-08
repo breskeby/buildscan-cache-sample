@@ -1,13 +1,14 @@
 package com.gradle.spike
 
-import com.gradle.scan.plugin.BuildScanExtension
+import com.gradle.scan.plugin.BuildScanPlugin
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.execution.TaskExecutionGraph
-import org.gradle.api.execution.TaskExecutionGraphListener
 
 public class TaskCacheStatisticsPlugin implements Plugin<Project> {
+
+
+    public static final String GENERATE_CACHE_STATISTICS_TASKNAME = "generateCacheStatistics"
 
     @Override
     void apply(Project project) {
@@ -18,15 +19,18 @@ public class TaskCacheStatisticsPlugin implements Plugin<Project> {
             return
         }
 
-        project.pluginManager.withPlugin("com.gradle.build-scan") {
-            def buildScanExtension = project.getExtensions().getByType(BuildScanExtension)
-            buildScanExtension.tag("Task Output Cache in use")
-            project.gradle.taskGraph.addTaskExecutionGraphListener(new TaskExecutionGraphListener() {
-                @Override
-                void graphPopulated(TaskExecutionGraph taskExecutionGraph) {
-                    taskExecutionGraph.addTaskExecutionListener(new TaskCacheStatusExecutionListener(taskExecutionGraph, buildScanExtension))
-                }
-            })
+
+        project.plugins.withType(BuildScanPlugin) {
+            project.buildScan.tag("Task Output Cache in use")
+
+            project.gradle.startParameter.taskNames = project.gradle.startParameter.taskNames + GENERATE_CACHE_STATISTICS_TASKNAME
+
+            TaskCacheStatusExecutionListener listener = new TaskCacheStatusExecutionListener(project.buildScan)
+            GenerateCacheStatistics generateCacheStatisticsTask = project.tasks.create(GENERATE_CACHE_STATISTICS_TASKNAME, GenerateCacheStatistics)
+            generateCacheStatisticsTask.conventionMapping.statisticsProvider = { listener }
+            generateCacheStatisticsTask.conventionMapping.buildScan = { project.buildScan}
+            project.gradle.taskGraph.addTaskExecutionListener(listener)
+
         }
 
     }
